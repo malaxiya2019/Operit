@@ -736,3 +736,47 @@ data class WebErrorResponse(
     @SerialName("error")
     val error: String
 )
+
+@Serializable
+data class WebAvatarStateResponse(
+    @SerialName("avatarId")
+    val avatarId: String,
+    @SerialName("emotion")
+    val emotion: String,
+    @SerialName("animation")
+    val animation: String?,
+    @SerialName("isLooping")
+    val isLooping: Boolean,
+    @SerialName("scale")
+    val scale: Float,
+    @SerialName("translateX")
+    val translateX: Float,
+    @SerialName("translateY")
+    val translateY: Float,
+    @SerialName("ready")
+    val ready: Boolean
+)
+
+@Serializable
+data class WebAvatarEmotionRequest(
+    @SerialName("emotion")
+    val emotion: String? = null
+)
+
+@Serializable
+data class WebAvatarAnimationRequest(
+    @SerialName("animation")
+    val animation: String? = null,
+    @SerialName("loop")
+    val loop: Boolean = false
+)
+
+@Serializable
+data class WebAvatarSettingsRequest(
+    @SerialName("scale")
+    val scale: Float? = null,
+    @SerialName("translateX")
+    val translateX: Float? = null,
+    @SerialName("translateY")
+    val translateY: Float? = null
+)

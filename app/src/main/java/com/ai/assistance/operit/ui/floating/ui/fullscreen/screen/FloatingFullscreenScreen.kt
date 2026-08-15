@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.core.avatar.common.control.AvatarSettingKeys
+import com.ai.assistance.operit.core.avatar.common.control.AvatarControlManager
 import com.ai.assistance.operit.core.avatar.common.state.AvatarEmotion
 import com.ai.assistance.operit.core.avatar.common.view.AvatarView
 import com.ai.assistance.operit.core.avatar.impl.factory.AvatarControllerFactoryImpl
@@ -175,6 +176,18 @@ fun FloatingFullscreenMode(floatContext: FloatContext) {
         }
     }
     val voiceAvatarController = currentAvatarModel?.let { avatarControllerFactory.createController(it) }
+    DisposableEffect(voiceAvatarController, currentAvatarModel?.id) {
+        val controller = voiceAvatarController
+        val avatarId = currentAvatarModel?.id
+        if (controller != null && avatarId != null) {
+            AvatarControlManager.registerActiveController(avatarId, controller)
+        }
+        onDispose {
+            if (controller != null) {
+                AvatarControlManager.unregisterActiveController(controller)
+            }
+        }
+    }
     val isVoiceAvatarEnabled =
         avatarSettings.isVoiceCallAvatarEnabled &&
             currentAvatarModel != null &&
