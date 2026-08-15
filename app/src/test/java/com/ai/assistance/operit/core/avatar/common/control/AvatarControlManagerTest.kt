@@ -95,5 +95,8 @@ class AvatarControlManagerTest {
                 isLooping = loop == 0
             )
         }
+        override fun lookAt(x: Float, y: Float) {
+            // no-op: fake controller has no rendering target
+        }
     }
 }
