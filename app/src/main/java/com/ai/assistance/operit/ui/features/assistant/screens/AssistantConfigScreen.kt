@@ -36,6 +36,7 @@ import com.ai.assistance.operit.ui.features.assistant.components.AvatarPreviewSe
 import com.ai.assistance.operit.ui.features.assistant.components.CompactSwitchRow
 import com.ai.assistance.operit.ui.features.assistant.components.VoiceAutoAttachGrid
 import com.ai.assistance.operit.core.avatar.impl.factory.AvatarControllerFactoryImpl
+import com.ai.assistance.operit.core.avatar.common.control.AvatarControlManager
 import com.ai.assistance.operit.ui.features.assistant.viewmodel.AssistantConfigViewModel
 import kotlinx.coroutines.launch
 
@@ -52,6 +53,18 @@ fun AssistantConfigScreen() {
         uiState.currentAvatarModel?.let { model ->
             avatarControllerFactory.createController(model)
         }
+    DisposableEffect(sharedAvatarController, uiState.currentAvatarModel?.id) {
+        val controller = sharedAvatarController
+        val avatarId = uiState.currentAvatarModel?.id
+        if (controller != null && avatarId != null) {
+            AvatarControlManager.registerActiveController(avatarId, controller)
+        }
+        onDispose {
+            if (controller != null) {
+                AvatarControlManager.unregisterActiveController(controller)
+            }
+        }
+    }
 
     val wakePrefs = remember { WakeWordPreferences(context.applicationContext) }
     val wakeListeningEnabled by wakePrefs.alwaysListeningEnabledFlow.collectAsState(initial = WakeWordPreferences.DEFAULT_ALWAYS_LISTENING_ENABLED)
