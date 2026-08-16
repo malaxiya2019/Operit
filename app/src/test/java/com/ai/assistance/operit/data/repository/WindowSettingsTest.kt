@@ -43,8 +43,8 @@ class WindowSettingsTest {
 
         assertEquals(500f, merged.waveSizeVoiceDp, 0.0f)
         assertEquals(250f, merged.avatarSizeVoiceDp, 0.0f)
-        assertEquals(180f, merged.waveSizePlainDp, 0.0f)
-        assertEquals(120f, merged.avatarSizePlainDp, 0.0f)
+        assertEquals(300f, merged.waveSizePlainDp, 0.0f)
+        assertEquals(180f, merged.avatarSizePlainDp, 0.0f)
     }
 
     @Test
