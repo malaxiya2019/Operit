@@ -505,6 +505,7 @@ class AvatarRepository(
         private const val KEY_CONFIGS = "avatar_configs"
         private const val KEY_SETTINGS = "avatar_settings"
         private const val KEY_INSTANCE_SETTINGS = "avatar_instance_settings"
+        private const val KEY_WINDOW_SETTINGS = "avatar_window_settings"
 
         private const val ASSETS_AVATAR_DIR = "pets"
         private const val USER_AVATAR_DIR = "avatars"
@@ -542,10 +543,13 @@ class AvatarRepository(
 
     private val _settings = MutableStateFlow(AvatarSettings())
     val settings: StateFlow<AvatarSettings> = _settings.asStateFlow()
-    
+
     private val _instanceSettings = MutableStateFlow<Map<String, AvatarInstanceSettings>>(emptyMap())
     val instanceSettings: StateFlow<Map<String, AvatarInstanceSettings>> = _instanceSettings.asStateFlow()
-    
+
+    private val _windowSettings = MutableStateFlow(WindowSettings())
+    val windowSettings: StateFlow<WindowSettings> = _windowSettings.asStateFlow()
+
     private val userAvatarDir: File by lazy {
         File(context.getExternalFilesDir(null), USER_AVATAR_DIR)
     }
@@ -554,6 +558,7 @@ class AvatarRepository(
         userAvatarDir.mkdirs()
         synchronizeAssets()
         loadAvatars()
+        _windowSettings.value = loadWindowSettingsFromPrefs()
     }
 
     private fun synchronizeAssets() {
@@ -638,7 +643,7 @@ class AvatarRepository(
             }
         }
     }
-    
+
     private fun isPathFromAssets(path: String): Boolean {
         // A simple heuristic to determine if a model was copied from assets.
         // This could be improved by storing metadata.
@@ -648,7 +653,7 @@ class AvatarRepository(
     suspend fun refreshAvatars() = withContext(Dispatchers.IO) {
         loadAvatars()
     }
-    
+
     fun switchAvatar(avatarId: String) {
         val currentSettings = loadSettingsFromPrefs()
         if (currentSettings.currentAvatarId != avatarId) {
@@ -674,7 +679,7 @@ class AvatarRepository(
             _currentAvatar.value = null
             return
         }
-        
+
         _currentAvatar.value = modelFactory.createModel(
             id = config.id,
             name = config.name,
@@ -752,7 +757,7 @@ class AvatarRepository(
 
         true
     }
-    
+
     fun updateAvatarSettings(avatarId: String, newSettings: AvatarInstanceSettings) {
         val updatedSettings = _instanceSettings.value.toMutableMap()
         updatedSettings[avatarId] = newSettings
@@ -801,6 +806,18 @@ class AvatarRepository(
     fun getAvatarSettings(avatarId: String): AvatarInstanceSettings {
         return _instanceSettings.value[avatarId] ?: AvatarInstanceSettings()
     }
+
+    /**
+     * 更新全屏浮窗尺寸（WindowSettings）。
+     * 与 Avatar Transform（scale/translate，AvatarInstanceSettings）分离存储。
+     */
+    fun updateWindowSettings(newSettings: WindowSettings) {
+        _windowSettings.value = newSettings
+        saveWindowSettingsToPrefs(newSettings)
+    }
+
+    /** 读取当前全屏浮窗尺寸配置。 */
+    fun getWindowSettings(): WindowSettings = _windowSettings.value
 
     private fun updateAvatarConfig(
         avatarId: String,
@@ -991,7 +1008,7 @@ class AvatarRepository(
             false
         }
     }
-    
+
     suspend fun importAvatarFromZip(uri: Uri): Boolean = withContext(Dispatchers.IO) {
         val tempDir = File(context.cacheDir, "avatar_import_${System.currentTimeMillis()}")
         try {
@@ -1202,5 +1219,20 @@ class AvatarRepository(
         val json = gson.toJson(settings)
         prefs.edit { putString(KEY_SETTINGS, json) }
         _settings.value = settings
+    }
+
+    private fun loadWindowSettingsFromPrefs(): WindowSettings {
+        val json = prefs.getString(KEY_WINDOW_SETTINGS, null) ?: return WindowSettings()
+        return try {
+            gson.fromJson(json, WindowSettings::class.java)
+        } catch (e: Exception) {
+            AppLogger.e(TAG, "Error parsing window settings from JSON", e)
+            WindowSettings()
+        }
+    }
+
+    private fun saveWindowSettingsToPrefs(settings: WindowSettings) {
+        val json = gson.toJson(settings)
+        prefs.edit { putString(KEY_WINDOW_SETTINGS, json) }
     }
 }

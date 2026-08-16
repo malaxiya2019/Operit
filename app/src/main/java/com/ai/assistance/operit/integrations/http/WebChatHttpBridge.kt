@@ -41,6 +41,7 @@ import com.ai.assistance.operit.integrations.http.bridge.WebChatMemorySelectorBr
 import com.ai.assistance.operit.integrations.http.bridge.WebChatManagementBridge
 import com.ai.assistance.operit.integrations.http.bridge.AvatarControlResult
 import com.ai.assistance.operit.integrations.http.bridge.WebChatAvatarBridge
+import com.ai.assistance.operit.integrations.http.bridge.WindowResult
 import com.ai.assistance.operit.integrations.externalchat.ExternalChatResponseSanitizer
 import com.ai.assistance.operit.services.core.MAX_DISPLAY_PAGE_COUNT
 import com.ai.assistance.operit.services.core.resolveDisplayPageRanges
@@ -234,6 +235,12 @@ class WebChatHttpBridge(
 
             session.uri == AVATAR_SETTINGS_PATH && session.method == NanoHTTPD.Method.POST ->
                 handleAvatarSettings(session)
+
+            session.uri == AVATAR_WINDOW_PATH && session.method == NanoHTTPD.Method.GET ->
+                handleAvatarWindowGet()
+
+            session.uri == AVATAR_WINDOW_PATH && session.method == NanoHTTPD.Method.POST ->
+                handleAvatarWindowPost(session)
 
             session.uri == UPLOADS_PATH && session.method == NanoHTTPD.Method.POST ->
                 handleUpload(session)
@@ -1030,6 +1037,28 @@ class WebChatHttpBridge(
                 translateY = request.translateY
             )
         )
+    }
+
+    private fun handleAvatarWindowGet(): NanoHTTPD.Response {
+        return windowResponse(avatarBridge.getWindow())
+    }
+
+    private fun handleAvatarWindowPost(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response {
+        val request = parseJsonRequest<WebAvatarWindowRequest>(session)
+            ?: return jsonResponse(
+                NanoHTTPD.Response.Status.BAD_REQUEST,
+                WebErrorResponse("Invalid JSON body")
+            )
+        return windowResponse(avatarBridge.updateWindow(request))
+    }
+
+    private fun windowResponse(result: WindowResult): NanoHTTPD.Response {
+        return when (result) {
+            is WindowResult.Success ->
+                jsonResponse(NanoHTTPD.Response.Status.OK, result.window)
+            is WindowResult.Failure ->
+                jsonResponse(httpStatus(result.httpCode), WebErrorResponse(result.error))
+        }
     }
 
     private fun avatarResponse(result: AvatarControlResult): NanoHTTPD.Response {
@@ -2861,6 +2890,7 @@ class WebChatHttpBridge(
         private const val AVATAR_EMOTION_PATH = "/api/web/avatar/emotion"
         private const val AVATAR_ANIMATION_PATH = "/api/web/avatar/animation"
         private const val AVATAR_SETTINGS_PATH = "/api/web/avatar/settings"
+        private const val AVATAR_WINDOW_PATH = "/api/web/avatar/window"
         private const val ASSET_ROUTE_PREFIX = "/api/web/assets"
         private const val JSON_MIME_TYPE = "application/json; charset=utf-8"
         private const val SSE_MIME_TYPE = "text/event-stream; charset=utf-8"

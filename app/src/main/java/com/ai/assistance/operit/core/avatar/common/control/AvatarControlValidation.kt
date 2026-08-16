@@ -17,6 +17,14 @@ internal object AvatarControlValidation {
     const val TRANSLATE_MIN = -2000f
     const val TRANSLATE_MAX = 2000f
 
+    // WindowSettings（浮窗尺寸）合法范围（dp）。
+    const val WAVE_SIZE_MIN = 100f
+    const val WAVE_SIZE_MAX = 2000f
+    const val AVATAR_SIZE_MIN = 40f
+    const val AVATAR_SIZE_MAX = 1000f
+    const val TAP_TARGET_MIN = 40f
+    const val TAP_TARGET_MAX = 1000f
+
     /**
      * Parses a raw emotion string into an [AvatarEmotion], case-insensitively.
      * Returns null for blank or unknown values.
@@ -36,6 +44,15 @@ internal object AvatarControlValidation {
 
     /** Clamps a translate value to the same bounds used by the runtime controller. */
     fun clampTranslate(value: Float): Float = value.coerceIn(TRANSLATE_MIN, TRANSLATE_MAX)
+
+    /** Clamps a wave (展示区域) diameter to the allowed dp range. */
+    fun clampWaveSize(value: Float): Float = value.coerceIn(WAVE_SIZE_MIN, WAVE_SIZE_MAX)
+
+    /** Clamps an avatar diameter to the allowed dp range. */
+    fun clampAvatarSize(value: Float): Float = value.coerceIn(AVATAR_SIZE_MIN, AVATAR_SIZE_MAX)
+
+    /** Clamps a tap-target diameter to the allowed dp range. */
+    fun clampTapTarget(value: Float): Float = value.coerceIn(TAP_TARGET_MIN, TAP_TARGET_MAX)
 
     /**
      * Maps the API loop flag to the controller playback count.

@@ -81,6 +81,46 @@ class AvatarControlValidationTest {
     }
 
     @Test
+    fun clampWaveSize_withinRange_isUnchanged() {
+        assertEquals(420f, AvatarControlValidation.clampWaveSize(420f), 0.0f)
+        assertEquals(100f, AvatarControlValidation.clampWaveSize(100f), 0.0f)
+        assertEquals(2000f, AvatarControlValidation.clampWaveSize(2000f), 0.0f)
+    }
+
+    @Test
+    fun clampWaveSize_outOfRange_isClamped() {
+        assertEquals(100f, AvatarControlValidation.clampWaveSize(10f), 0.0f)
+        assertEquals(2000f, AvatarControlValidation.clampWaveSize(9999f), 0.0f)
+        assertEquals(100f, AvatarControlValidation.clampWaveSize(-50f), 0.0f)
+    }
+
+    @Test
+    fun clampAvatarSize_withinRange_isUnchanged() {
+        assertEquals(320f, AvatarControlValidation.clampAvatarSize(320f), 0.0f)
+        assertEquals(40f, AvatarControlValidation.clampAvatarSize(40f), 0.0f)
+        assertEquals(1000f, AvatarControlValidation.clampAvatarSize(1000f), 0.0f)
+    }
+
+    @Test
+    fun clampAvatarSize_outOfRange_isClamped() {
+        assertEquals(40f, AvatarControlValidation.clampAvatarSize(5f), 0.0f)
+        assertEquals(1000f, AvatarControlValidation.clampAvatarSize(5000f), 0.0f)
+    }
+
+    @Test
+    fun clampTapTarget_withinRange_isUnchanged() {
+        assertEquals(220f, AvatarControlValidation.clampTapTarget(220f), 0.0f)
+        assertEquals(40f, AvatarControlValidation.clampTapTarget(40f), 0.0f)
+        assertEquals(1000f, AvatarControlValidation.clampTapTarget(1000f), 0.0f)
+    }
+
+    @Test
+    fun clampTapTarget_outOfRange_isClamped() {
+        assertEquals(40f, AvatarControlValidation.clampTapTarget(0f), 0.0f)
+        assertEquals(1000f, AvatarControlValidation.clampTapTarget(3000f), 0.0f)
+    }
+
+    @Test
     fun loopFlagToPlaybackCount_true_meansInfiniteLoop() {
         assertEquals(0, AvatarControlValidation.loopFlagToPlaybackCount(true))
     }

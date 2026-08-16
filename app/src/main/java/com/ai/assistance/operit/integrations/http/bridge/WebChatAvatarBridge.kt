@@ -4,10 +4,13 @@ import android.content.Context
 import com.ai.assistance.operit.core.avatar.common.control.AvatarControlManager
 import com.ai.assistance.operit.core.avatar.common.control.AvatarControlValidation
 import com.ai.assistance.operit.core.avatar.common.control.AvatarSettingKeys
+import com.ai.assistance.operit.core.avatar.impl.factory.AvatarModelFactoryImpl
 import com.ai.assistance.operit.data.repository.AvatarInstanceSettings
 import com.ai.assistance.operit.data.repository.AvatarRepository
-import com.ai.assistance.operit.core.avatar.impl.factory.AvatarModelFactoryImpl
+import com.ai.assistance.operit.data.repository.WindowSettings
 import com.ai.assistance.operit.integrations.http.WebAvatarStateResponse
+import com.ai.assistance.operit.integrations.http.WebAvatarWindowRequest
+import com.ai.assistance.operit.integrations.http.WebAvatarWindowResponse
 
 /**
  * Result of an avatar control operation.
@@ -19,6 +22,18 @@ import com.ai.assistance.operit.integrations.http.WebAvatarStateResponse
 internal sealed interface AvatarControlResult {
     data class Success(val state: WebAvatarStateResponse) : AvatarControlResult
     data class Failure(val httpCode: Int, val error: String) : AvatarControlResult
+}
+
+/**
+ * Result of a window-settings operation.
+ *
+ * Unlike runtime avatar control, window settings are pure persistence
+ * (no active controller required), so [Success] carries the full updated
+ * [WebAvatarWindowResponse] and there is no "not ready" branch.
+ */
+internal sealed interface WindowResult {
+    data class Success(val window: WebAvatarWindowResponse) : WindowResult
+    data class Failure(val httpCode: Int, val error: String) : WindowResult
 }
 
 /**
@@ -144,6 +159,35 @@ internal class WebChatAvatarBridge(
 
         return resolveState()
     }
+
+    /** GET /api/web/avatar/window */
+    fun getWindow(): WindowResult {
+        return WindowResult.Success(avatarRepository.getWindowSettings().toResponse())
+    }
+
+    /** POST /api/web/avatar/window — partial update, clamps every provided field. */
+    fun updateWindow(request: WebAvatarWindowRequest): WindowResult {
+        val current = avatarRepository.getWindowSettings()
+        val updated = current.mergedWith(
+            waveSizeVoice = request.waveSizeVoice?.let(AvatarControlValidation::clampWaveSize),
+            avatarSizeVoice = request.avatarSizeVoice?.let(AvatarControlValidation::clampAvatarSize),
+            tapTargetVoice = request.tapTargetVoice?.let(AvatarControlValidation::clampTapTarget),
+            waveSizePlain = request.waveSizePlain?.let(AvatarControlValidation::clampWaveSize),
+            avatarSizePlain = request.avatarSizePlain?.let(AvatarControlValidation::clampAvatarSize),
+            tapTargetPlain = request.tapTargetPlain?.let(AvatarControlValidation::clampTapTarget)
+        )
+        avatarRepository.updateWindowSettings(updated)
+        return WindowResult.Success(updated.toResponse())
+    }
+
+    private fun WindowSettings.toResponse(): WebAvatarWindowResponse = WebAvatarWindowResponse(
+        waveSizeVoice = waveSizeVoiceDp,
+        avatarSizeVoice = avatarSizeVoiceDp,
+        tapTargetVoice = tapTargetVoiceDp,
+        waveSizePlain = waveSizePlainDp,
+        avatarSizePlain = avatarSizePlainDp,
+        tapTargetPlain = tapTargetPlainDp
+    )
 
     private fun currentAvatarId(): String? {
         return AvatarControlManager.getActiveAvatarId()

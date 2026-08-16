@@ -780,3 +780,35 @@ data class WebAvatarSettingsRequest(
     @SerialName("translateY")
     val translateY: Float? = null
 )
+
+@Serializable
+data class WebAvatarWindowRequest(
+    @SerialName("waveSizeVoice")
+    val waveSizeVoice: Float? = null,
+    @SerialName("avatarSizeVoice")
+    val avatarSizeVoice: Float? = null,
+    @SerialName("tapTargetVoice")
+    val tapTargetVoice: Float? = null,
+    @SerialName("waveSizePlain")
+    val waveSizePlain: Float? = null,
+    @SerialName("avatarSizePlain")
+    val avatarSizePlain: Float? = null,
+    @SerialName("tapTargetPlain")
+    val tapTargetPlain: Float? = null
+)
+
+@Serializable
+data class WebAvatarWindowResponse(
+    @SerialName("waveSizeVoice")
+    val waveSizeVoice: Float,
+    @SerialName("avatarSizeVoice")
+    val avatarSizeVoice: Float,
+    @SerialName("tapTargetVoice")
+    val tapTargetVoice: Float,
+    @SerialName("waveSizePlain")
+    val waveSizePlain: Float,
+    @SerialName("avatarSizePlain")
+    val avatarSizePlain: Float,
+    @SerialName("tapTargetPlain")
+    val tapTargetPlain: Float
+)

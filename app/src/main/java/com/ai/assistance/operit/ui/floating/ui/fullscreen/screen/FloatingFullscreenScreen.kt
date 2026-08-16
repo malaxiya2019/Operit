@@ -70,6 +70,7 @@ import com.ai.assistance.operit.data.preferences.UserPreferencesManager
 import com.ai.assistance.operit.data.preferences.WakeWordPreferences
 import com.ai.assistance.operit.data.repository.AvatarRepository
 import com.ai.assistance.operit.data.repository.AvatarSettings
+import com.ai.assistance.operit.data.repository.WindowSettings
 import com.ai.assistance.operit.data.repository.getEmotionAnimationMapping
 import com.ai.assistance.operit.data.repository.getMoodAnimationMapping
 import com.ai.assistance.operit.ui.floating.FloatContext
@@ -150,6 +151,7 @@ fun FloatingFullscreenMode(floatContext: FloatContext) {
     val avatarSettings by avatarRepository.settings.collectAsState(initial = AvatarSettings())
     val avatarConfigs by avatarRepository.configs.collectAsState(initial = emptyList())
     val avatarInstanceSettings by avatarRepository.instanceSettings.collectAsState(initial = emptyMap())
+    val windowSettings by avatarRepository.windowSettings.collectAsState(initial = WindowSettings())
     val currentAvatarConfig = remember(avatarConfigs, currentAvatarModel?.id) {
         currentAvatarModel?.let { avatar -> avatarConfigs.find { it.id == avatar.id } }
     }
@@ -502,9 +504,9 @@ fun FloatingFullscreenMode(floatContext: FloatContext) {
             // 波浪可视化和头像：仅在语音模式下显示
             if (effectiveWaveActive) {
                 val waveOffsetY = (-64).dp
-                val activeWaveSize = if (isVoiceAvatarEnabled) 420.dp else 300.dp
-                val activeAvatarSize = if (isVoiceAvatarEnabled) 320.dp else 120.dp
-                val centerTapTargetSize = if (isVoiceAvatarEnabled) 220.dp else 140.dp
+                val activeWaveSize = if (isVoiceAvatarEnabled) windowSettings.waveSizeVoiceDp.dp else windowSettings.waveSizePlainDp.dp
+                val activeAvatarSize = if (isVoiceAvatarEnabled) windowSettings.avatarSizeVoiceDp.dp else windowSettings.avatarSizePlainDp.dp
+                val centerTapTargetSize = if (isVoiceAvatarEnabled) windowSettings.tapTargetVoiceDp.dp else windowSettings.tapTargetPlainDp.dp
                 WaveVisualizerSection(
                     isWaveActive = viewModel.isWaveActive,
                     isRecording = viewModel.isRecording,
